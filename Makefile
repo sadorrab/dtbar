@@ -3,14 +3,14 @@ CFLAGS := -g -Wall -Wextra
 CPPFLAGS := $(shell pkg-config --cflags pangocairo)
 LDLIBS := -lwayland-client $(shell pkg-config --libs pangocairo)
 
-HEADERS := src/config.h \
-		   src/wlr-layer-shell-protocol.h src/xdg-shell-protocol.h
+HEADERS := src/wlr-layer-shell-protocol.h src/xdg-shell-protocol.h
 OBJS := src/main.o src/wl.o src/draw.o src/poll.o \
-		src/wlr-layer-shell-protocol.o src/xdg-shell-protocol.o
+		src/wlr-layer-shell-protocol.o \
+		src/xdg-shell-protocol.o
 
 make: dtbar
 
-dtbar: $(FILES) $(OBJS)
+dtbar: $(OBJS)
 	$(CC) $^ $(LDLIBS) -o $@
 
 src/wlr-layer-shell-protocol.h:
@@ -35,4 +35,4 @@ clean:
 
 install: dtbar
 	mkdir -p $(PKG)/usr/bin
-	ln $< $(PKG)/usr/bin/$<
+	cp $< $(PKG)/usr/bin/$<
