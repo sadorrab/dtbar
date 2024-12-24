@@ -1,4 +1,6 @@
 #include "wl.h"
+#include "utils.h"
+#include "widgets.h"
 #include "main.h"
 
 #define SCREEN_WIDTH 1366
@@ -13,7 +15,8 @@ static dt_spec_t widget_specs[] = {
         .exclusive_zone = 30,
         .layer = 1, // bottom
         .anchor = 1, // top
-        .draw_fn = draw_statusbar
+        .on_start = NULL,
+        .on_repeat = bar_on_repeat
     },
     {
         .name = "wallpaper",
@@ -22,6 +25,7 @@ static dt_spec_t widget_specs[] = {
         .exclusive_zone = 0,
         .layer = 0, // background
         .anchor = 1,
-        .draw_fn = draw_wallpaper
+        .on_start = wall_on_start,
+        .on_repeat = NULL
     }
 };

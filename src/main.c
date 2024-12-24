@@ -34,7 +34,8 @@ dt_ctl *create_widgets(int specc, const dt_spec_t specs[]) {
     // create widgets
     for (int i=0; i<ctl->widget_count; i++) {
         ctl->widgets[i].buf = create_buffer(ctl->pool_ctl, specs[i].name, specs[i].width, specs[i].height, specs[i].exclusive_zone, specs[i].layer, specs[i].anchor);
-        ctl->widgets[i].draw_fn = specs[i].draw_fn;
+        ctl->widgets[i].on_start = specs[i].on_start;
+        ctl->widgets[i].on_repeat = specs[i].on_repeat;
     }
     return ctl;
 }
@@ -51,13 +52,19 @@ void destroy_widgets(dt_ctl *ctl) {
 void *dt_widget_start(void *args) {
     dt_status_t *status = (dt_status_t*) args;
     dt_ctl *ctl = create_widgets(widget_count, widget_specs);
-    dt_widget_t *bar = &ctl->widgets[0];
-    dt_widget_t *wall = &ctl->widgets[1];
-    (wall->draw_fn) (wall->buf, status);
-    update_surface(wall->buf);
+    for (int i=0; i<widget_count; i++) {
+        dt_widget_t *w = &ctl->widgets[i];
+        if (w->on_start != NULL) {
+            (w->on_start) (w->buf, status);
+        }
+    }
     while (1) {
-        (bar->draw_fn) (bar->buf, status);
-        update_surface(bar->buf);
+        for (int i=0; i<widget_count; i++) {
+            dt_widget_t *w = &ctl->widgets[i];
+            if (w->on_repeat != NULL) {
+                (w->on_repeat) (w->buf, status);
+            }
+        }
         sleep(30);
     }
     destroy_widgets(ctl);

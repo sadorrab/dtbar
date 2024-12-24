@@ -5,6 +5,9 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pango/pangocairo.h>
+#include "wl.h"
+
 
 typedef struct {
     short int hour;

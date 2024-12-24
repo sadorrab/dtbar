@@ -1,22 +1,24 @@
 #pragma once
 #include "wl.h"
-#include "draw.h"
-#include "poll.h"
+#include "utils.h"
 
 #define MAX_WIDGETS 4
 
+typedef void (*dt_wig_fn) (wl_pool_buffer_t*, void *args);
 typedef struct {
     const char name[NAME_MAX_LENGTH];
     uint32_t width, height;
     uint32_t exclusive_zone;
     int layer;
     int anchor;
-    void (*draw_fn) (wl_pool_buffer_t*, dt_status_t*);
+    dt_wig_fn on_start;
+    dt_wig_fn on_repeat;
 } dt_spec_t;
 
 typedef struct {
     wl_pool_buffer_t *buf;
-    void (*draw_fn) (wl_pool_buffer_t*, dt_status_t*);
+    dt_wig_fn on_start;
+    dt_wig_fn on_repeat;
 } dt_widget_t;
 
 typedef struct {

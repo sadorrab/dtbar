@@ -1,4 +1,4 @@
-#include "poll.h"
+#include "utils.h"
 
 void *periodic_poll(void *args) {
     passive_poll_args *ar = (passive_poll_args*) args;
@@ -28,4 +28,3 @@ void *periodic_poll(void *args) {
         sleep(sleeptime);
     }
 }
-

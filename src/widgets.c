@@ -1,6 +1,10 @@
-#include "draw.h"
-#define FONT "Sans 12"
+#include "widgets.h"
 
+// widgets.c
+// implementations for widgets
+
+/* status bar */
+#define FONT "Sans 12"
 void draw_statusbar_text(wl_pool_buffer_t *buf, const char* time, const char *battery) {
     //setup font
     PangoFontDescription *font_description;
@@ -31,7 +35,8 @@ void draw_statusbar_text(wl_pool_buffer_t *buf, const char* time, const char *ba
     pango_font_description_free(font_description);
 }
 
-void draw_statusbar(wl_pool_buffer_t *buf, dt_status_t *status) {
+void bar_on_repeat(wl_pool_buffer_t *buf, void *args) {
+    dt_status_t *status = (dt_status_t*) args;
     char timestr[24];
     char batterystr[8];
     sprintf(timestr, "%02d:%02d", status->hour, status->minute);
@@ -43,12 +48,18 @@ void draw_statusbar(wl_pool_buffer_t *buf, dt_status_t *status) {
 
     // text
     draw_statusbar_text(buf, timestr, batterystr);
-    (void)status;
+
+    update_surface(buf);
 }
 
-void draw_wallpaper(wl_pool_buffer_t *buf, dt_status_t *status) {
+
+/* wallpaper */
+void wall_on_start(wl_pool_buffer_t *buf, void *args) {
+    dt_status_t *status = (dt_status_t*) args;
     cairo_set_source_rgb(buf->cairo, 0.40, 0.43, 0.64);
     cairo_rectangle(buf->cairo, 0, 0, buf->width, buf->height);
     cairo_fill(buf->cairo);
+
+    update_surface(buf);
     (void)status;
 }
