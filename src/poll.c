@@ -8,12 +8,23 @@ void *periodic_poll(void *args) {
     time_t rawtime;
     struct tm *timeinfo;
 
+    const char *fname = "/sys/class/power_supply/BAT0/capacity";
+    FILE *fin = fopen(fname, "r");
+    if (fin ==NULL) {
+        printf("cannot get batter, aborting\n");
+        exit(0);
+    }
+    char batterystr[4];
+
     while (1) {
         time(&rawtime);
         timeinfo = localtime(&rawtime);
         status->hour = timeinfo->tm_hour;
         status->minute = timeinfo->tm_min;
         status->second = timeinfo->tm_sec;
+
+        fgets(batterystr, 4, fin);
+        status->battery = atoi(batterystr);
         sleep(sleeptime);
     }
 }

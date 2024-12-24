@@ -3,11 +3,14 @@
 #include <unistd.h>
 #include <signal.h>
 #include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef struct {
     short int hour;
     short int minute;
     short int second;
+    short int battery;
 } dt_status_t;
 
 typedef struct {

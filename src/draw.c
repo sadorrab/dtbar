@@ -33,19 +33,21 @@ void draw_statusbar_text(wl_pool_buffer_t *buf, const char* time, const char *ba
 
 void draw_statusbar(wl_pool_buffer_t *buf, dt_status_t *status) {
     char timestr[24];
-    sprintf(timestr, "%02d:%02d:%02d", status->hour, status->minute, status->second);
+    char batterystr[8];
+    sprintf(timestr, "%02d:%02d", status->hour, status->minute);
+    sprintf(batterystr, "%3d%%", status->battery);
     // background
     cairo_set_source_rgb(buf->cairo, 0.10, 0.11, 0.17);
     cairo_rectangle(buf->cairo, 0, 0, buf->width, buf->height);
     cairo_fill(buf->cairo);
 
     // text
-    draw_statusbar_text(buf, timestr, "56%");
+    draw_statusbar_text(buf, timestr, batterystr);
     (void)status;
 }
 
 void draw_wallpaper(wl_pool_buffer_t *buf, dt_status_t *status) {
-    cairo_set_source_rgb(buf->cairo, 0.23, 0.45, 0.20);
+    cairo_set_source_rgb(buf->cairo, 0.40, 0.43, 0.64);
     cairo_rectangle(buf->cairo, 0, 0, buf->width, buf->height);
     cairo_fill(buf->cairo);
     (void)status;

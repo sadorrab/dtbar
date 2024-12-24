@@ -42,21 +42,14 @@ typedef struct {
     size_t size;
 } wl_pool_ctl_t;
 
-typedef struct {
-    const char name[NAME_MAX_LENGTH];
-    uint32_t width, height;
-    uint32_t exclusive_zone;
-    int layer;
-    int anchor;
-} surface_layout_t;
-
 int wl_init(void);
 void wl_fin(void);
 
 wl_pool_ctl_t *create_pool(size_t size);
 void destroy_pool(wl_pool_ctl_t *ctl);
 
-wl_pool_buffer_t *create_buffer(wl_pool_ctl_t *ctl, const surface_layout_t spec);
+wl_pool_buffer_t *create_buffer(wl_pool_ctl_t *ctl, const char *name,
+        uint32_t width, uint32_t height, uint32_t exclusive_zone, int layer, int anchor);
 void destroy_buffer(wl_pool_buffer_t *pool_buf);
 
 void update_surface(wl_pool_buffer_t *buf);

@@ -109,23 +109,24 @@ void destroy_pool(wl_pool_ctl_t *ctl) {
     munmap(ctl->data, ctl->size);
     free(ctl);
 }
-wl_pool_buffer_t *create_buffer(wl_pool_ctl_t *ctl, const surface_layout_t spec) {
+wl_pool_buffer_t *create_buffer(wl_pool_ctl_t *ctl, const char *name,
+        uint32_t width, uint32_t height, uint32_t exclusive_zone, int layer, int anchor) {
     wl_pool_buffer_t *buf = malloc(sizeof(wl_pool_buffer_t));
 
     buf->surface = wl_compositor_create_surface(ctx.compositor);
     buf->layer_surface = zwlr_layer_shell_v1_get_layer_surface(
-        ctx.layer_shell, buf->surface, NULL, spec.layer, spec.name); 
+        ctx.layer_shell, buf->surface, NULL, layer, name); 
     zwlr_layer_surface_v1_add_listener(buf->layer_surface, &layer_surface_listener, NULL);
 
-    buf->width = spec.width;
-    buf->height = spec.height;
-    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, spec.width);
-    buf->size = spec.height * stride;
+    buf->width = width;
+    buf->height = height;
+    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
+    buf->size = height * stride;
 
     // ask to set layer surface properties
     zwlr_layer_surface_v1_set_size(buf->layer_surface, buf->width, buf->height);
-    zwlr_layer_surface_v1_set_anchor(buf->layer_surface, spec.anchor); 
-    zwlr_layer_surface_v1_set_exclusive_zone(buf->layer_surface, spec.exclusive_zone);
+    zwlr_layer_surface_v1_set_anchor(buf->layer_surface, anchor); 
+    zwlr_layer_surface_v1_set_exclusive_zone(buf->layer_surface, exclusive_zone);
     wl_surface_commit(buf->surface); // surface should be configured
 
     // create buffer

@@ -8,9 +8,9 @@ HEADERS := src/config.h \
 OBJS := src/main.o src/wl.o src/draw.o src/poll.o \
 		src/wlr-layer-shell-protocol.o src/xdg-shell-protocol.o
 
-make: bar
+make: dtbar
 
-bar: $(FILES) $(OBJS)
+dtbar: $(FILES) $(OBJS)
 	$(CC) $^ $(LDLIBS) -o $@
 
 src/wlr-layer-shell-protocol.h:
@@ -31,4 +31,8 @@ src/xdg-shell-protocol.c:
 	$(CC) -c $< $(CFLAGS) $(CPPFLAGS) -o $@
 
 clean:
-	rm -f bar src/*.o src/*-protocol.*
+	rm -f dtbar src/*.o src/*-protocol.*
+
+install: dtbar
+	mkdir -p $(PKG)/usr/bin
+	ln $< $(PKG)/usr/bin/$<
