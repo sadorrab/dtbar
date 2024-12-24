@@ -3,9 +3,9 @@ CFLAGS := -g -Wall -Wextra
 CPPFLAGS := $(shell pkg-config --cflags pangocairo)
 LDLIBS := -lwayland-client $(shell pkg-config --libs pangocairo)
 
-HEADERS := src/wl.h \
+HEADERS := src/config.h \
 		   src/wlr-layer-shell-protocol.h src/xdg-shell-protocol.h
-OBJS := src/main.o src/wl.o src/draw.o \
+OBJS := src/main.o src/wl.o src/draw.o src/poll.o \
 		src/wlr-layer-shell-protocol.o src/xdg-shell-protocol.o
 
 make: bar

@@ -1,45 +1,54 @@
-#include "wl.h"
-#include "draw.h"
-
-#define ANCHOR_TOP 1
-#define LAYER_BG 0
-#define LAYER_BOT 1
+#include "main.h"
+#include "config.h"
 
 int main(void) {
-    surface_layout_t bar_layout = {
-        .name = "statusbar",
-        .width = 1366,
-        .height = 30,
-        .exclusive_zone = 30,
-        .anchor = ANCHOR_TOP, 
-        .layer = LAYER_BOT
+    dt_status_t status;
+    passive_poll_args args = {
+        .status = &status,
+        .period_sec = 1
     };
-    surface_layout_t bg_layout = {
-        .name = "background",
-        .width = 1366,
-        .height = 768,
-        .exclusive_zone = 0,
-        .anchor = ANCHOR_TOP,
-        .layer = LAYER_BG
-    };
-    size_t size = bar_layout.width * bar_layout.height * PIXEL_SIZE +
-        bg_layout.width * bg_layout.height * PIXEL_SIZE;
+    pthread_t poll;
+    pthread_create(&poll, NULL, periodic_poll, &args);
+    dt_ctl *ctl = create_widgets();
 
-    wl_init();
+    dt_widget_t *bar = &ctl->widgets[0];
+    while (1) {
+        (bar->draw_fn) (bar->buf, &status);
+        update_surface(bar->buf);
+        sleep(1);
+    }
 
-    wl_pool_ctl_t *pool = create_pool(size);
-    wl_pool_buffer_t *bar = create_buffer(pool, bar_layout);
-    wl_pool_buffer_t *wall = create_buffer(pool, bg_layout);
-
-    draw_statusbar(bar);
-    draw_wallpaper(wall);
-    update_surface(bar);
-    update_surface(wall);
-    sleep(30);
-
-    destroy_buffer(bar);
-    destroy_buffer(wall);
-    destroy_pool(pool);
-    wl_fin();
+    pthread_kill(poll, SIGKILL);
+    pthread_join(poll, NULL);
+    destroy_widgets(ctl);
     return 0;
+}
+
+dt_ctl *create_widgets(void) {
+    wl_init();
+    dt_ctl *ctl = malloc(sizeof(dt_ctl));
+    ctl->widget_count = widget_count;
+
+    // calculate total size for pool
+    size_t total_size = 0;
+    for (int i=0; i<widget_count; i++) {
+        total_size += specs[i].layout.width * specs[i].layout.height * PIXEL_SIZE;
+    }
+    ctl->pool_ctl = create_pool(total_size);
+
+    // create widgets
+    for (int i=0; i<widget_count; i++) {
+        ctl->widgets[i].buf = create_buffer(ctl->pool_ctl, specs[i].layout);
+        ctl->widgets[i].draw_fn = specs[i].draw_fn;
+    }
+    return ctl;
+}
+
+void destroy_widgets(dt_ctl *ctl) {
+    for (int i=0; i<ctl->widget_count; i++) {
+        destroy_buffer(ctl->widgets[i].buf);
+    }
+    destroy_pool(ctl->pool_ctl);
+    free(ctl);
+    wl_fin();
 }
