@@ -1,33 +1,40 @@
-#pragma once
-#include "wl.h"
-#include "utils.h"
+#include "widgets.h"
 
-#define MAX_WIDGETS 4
+#define ANCHOR_TOP 1
+#define ANCHOR_BOTTOM 2
+#define ANCHOR_LEFT 4
 
-typedef void (*dt_wig_fn) (wl_pool_buffer_t*, void *args);
-typedef struct {
-    const char name[NAME_MAX_LENGTH];
-    uint32_t width, height;
-    uint32_t exclusive_zone;
-    int layer;
-    int anchor;
-    dt_wig_fn on_start;
-    dt_wig_fn on_repeat;
-} dt_spec_t;
-
-typedef struct {
-    wl_pool_buffer_t *buf;
-    dt_wig_fn on_start;
-    dt_wig_fn on_repeat;
-} dt_widget_t;
-
-typedef struct {
-    int widget_count;
-    dt_widget_t widgets[MAX_WIDGETS];
-    wl_pool_ctl_t *pool_ctl;
-} dt_ctl;
-
-dt_ctl *create_widgets(int specc, const dt_spec_t specs[]);
-void destroy_widgets(dt_ctl *ctl);
-
-void *dt_widget_start(void *args);
+const int widget_count  = 2;
+const dt_spec_t widget_specs[] = {
+    {
+        .layout = {
+            .name = "wallpaper",
+            .width = SCREEN_WIDTH,
+            .height = SCREEN_HEIGHT,
+            .exclusive_zone = 0,
+            .layer = 0, // background
+            .anchor = ANCHOR_TOP,
+            .off_top = 0,
+            .off_bottom = 0,
+            .off_right = 0,
+            .off_left = 0
+        },
+        .on_start = wall_on_start,
+        .on_repeat = NULL
+    },
+    {
+        .layout = {
+            .name = "clock",
+            .width = 600, 
+            .height = 200,
+            .layer = 1,
+            .anchor = ANCHOR_BOTTOM | ANCHOR_LEFT,
+            .off_top = 0,
+            .off_bottom = 0,
+            .off_left = 40,
+            .off_right = 0
+        },
+        .on_start = NULL,
+        .on_repeat = clock_on_repeat
+    }
+};

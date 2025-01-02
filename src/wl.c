@@ -109,24 +109,24 @@ void destroy_pool(wl_pool_ctl_t *ctl) {
     munmap(ctl->data, ctl->size);
     free(ctl);
 }
-wl_pool_buffer_t *create_buffer(wl_pool_ctl_t *ctl, const char *name,
-        uint32_t width, uint32_t height, uint32_t exclusive_zone, int layer, int anchor) {
+
+wl_pool_buffer_t *create_buffer(wl_pool_ctl_t *ctl, const wl_surface_layout layout) {
     wl_pool_buffer_t *buf = malloc(sizeof(wl_pool_buffer_t));
 
     buf->surface = wl_compositor_create_surface(ctx.compositor);
-    buf->layer_surface = zwlr_layer_shell_v1_get_layer_surface(
-        ctx.layer_shell, buf->surface, NULL, layer, name); 
+    buf->layer_surface = zwlr_layer_shell_v1_get_layer_surface(ctx.layer_shell, buf->surface, NULL, layout.layer, layout.name); 
     zwlr_layer_surface_v1_add_listener(buf->layer_surface, &layer_surface_listener, NULL);
 
-    buf->width = width;
-    buf->height = height;
-    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-    buf->size = height * stride;
+    buf->width = layout.width;
+    buf->height = layout.height;
+    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, layout.width);
+    buf->size = layout.height * stride;
 
     // ask to set layer surface properties
     zwlr_layer_surface_v1_set_size(buf->layer_surface, buf->width, buf->height);
-    zwlr_layer_surface_v1_set_anchor(buf->layer_surface, anchor); 
-    zwlr_layer_surface_v1_set_exclusive_zone(buf->layer_surface, exclusive_zone);
+    zwlr_layer_surface_v1_set_anchor(buf->layer_surface, layout.anchor); 
+    zwlr_layer_surface_v1_set_exclusive_zone(buf->layer_surface, layout.exclusive_zone);
+    zwlr_layer_surface_v1_set_margin(buf->layer_surface, layout.off_top, layout.off_right, layout.off_bottom, layout.off_left);
     wl_surface_commit(buf->surface); // surface should be configured
 
     // create buffer
