@@ -51,15 +51,28 @@ void draw_textbox(cairo_t *cr, double xpos, double ypos, const char *text, const
     // layouts
     PangoLayout *layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, font_description);
-    pango_layout_set_text(layout, text, -1); // 19\n47
+    pango_layout_set_text(layout, text, -1);
     pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
 
     // draw text
-    cairo_set_source_rgba(cr, RGBA(color_RGBA)); // 0xffffff
-    cairo_move_to(cr, xpos, ypos); //40.0, 80.0
+    cairo_set_source_rgba(cr, RGBA(color_RGBA));
+    cairo_move_to(cr, xpos, ypos); 
     pango_cairo_show_layout(cr, layout);
 
     // free
     g_object_unref(layout);
     pango_font_description_free(font_description);
 }
+
+char* read_text(const char *fname) {
+    int fd = open(fname, O_RDONLY, 0);
+    struct stat sb;
+    fstat(fd, &sb);
+    size_t size = sb.st_size;
+    char *buf = malloc(size+1);
+    read(fd, buf, size);
+    buf[size] = '\0';
+    close(fd);
+    return buf;
+}
+    

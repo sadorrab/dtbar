@@ -29,7 +29,6 @@ typedef struct {
 dt_ctl *create_widgets(int specc, const dt_spec_t specs[]);
 void destroy_widgets(dt_ctl *ctl);
 
-
 /* wallpaper */
 void wall_on_start(wl_pool_buffer_t *buf, void *args);
 
