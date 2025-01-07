@@ -1,14 +1,5 @@
 #include "utils.h"
 
-
-/* PangoLayout* pango_new_layout (PangoContext *ctx);
- *
- * pango_layout_get/set_
- *  width(int width); // -1 default inf
- *  wrap(PangoWrapMode wrap); // 0 PANGO_WRAP_WORD 1 PANGO_WRAP_CHAR 2  PANGO_WRAP_WORD_CHAR
- *  alignment(PangoAlignment alignment PANGO_ALIGN_LEFT/CENTER/RIGHT
- */
-
 dt_status_t* create_status() {
     dt_status_t *status = malloc(sizeof(dt_status_t));
     return status;
@@ -41,27 +32,10 @@ void status_poll_battery(dt_status_t *status) {
     fgets(str, 4, fin);
     status->battery = atoi(str);
     fclose(fin);
-}
-
-void draw_textbox(cairo_t *cr, double xpos, double ypos, const char *text, const char *font, int color_RGBA) {
-    //setup font
-    PangoFontDescription *font_description;
-    font_description = pango_font_description_from_string(font); // "Terminess Nerd Font 48"
-
-    // layouts
-    PangoLayout *layout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(layout, font_description);
-    pango_layout_set_text(layout, text, -1);
-    pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
-
-    // draw text
-    cairo_set_source_rgba(cr, RGBA(color_RGBA));
-    cairo_move_to(cr, xpos, ypos); 
-    pango_cairo_show_layout(cr, layout);
-
-    // free
-    g_object_unref(layout);
-    pango_font_description_free(font_description);
+    char *icons[] = {"󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"};
+    int i = (status->battery) / 10;
+    i = i>=0 ? i<11 ? i : 10 : 0;
+    status->battery_icon = icons[i];
 }
 
 char* read_text(const char *fname) {
@@ -76,3 +50,28 @@ char* read_text(const char *fname) {
     return buf;
 }
     
+void draw_fill(cairo_t *cr, rectangle_t surf, void *args) {
+    int color = *((int*) args);
+    cairo_rectangle(cr, surf.x, surf.y, surf.w, surf.h);
+    cairo_set_source_rgba(cr, RGBA(color));
+    cairo_fill(cr);
+}
+
+void draw_text(cairo_t *cr, rectangle_t surf, void *args) {
+    char *markup = (char*) args;
+    int len = strlen(markup);
+    char *str = malloc(len * sizeof(char));
+    PangoAttrList *attribs = pango_attr_list_new();
+    pango_parse_markup(markup, -1, 0, &attribs, &str, NULL, NULL);
+    PangoLayout *layout = pango_cairo_create_layout(cr);
+    pango_layout_set_attributes(layout, attribs);
+    pango_layout_set_text(layout, str, -1);
+    cairo_move_to(cr, surf.x, surf.y);
+    pango_layout_set_width(layout, surf.w * PANGO_SCALE);
+    pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
+    pango_cairo_show_layout(cr, layout);
+
+    pango_attr_list_unref(attribs);
+    g_object_unref(layout);
+    free(str);
+}

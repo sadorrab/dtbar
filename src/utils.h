@@ -7,7 +7,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#define RGB(hex) ((hex>>8)&0xff)/255.0, ((hex>>4)&0xff)/255.0,(hex&0xff)/255.0
 #define RGBA(hex) ((hex>>24)&0xff)/255.0, ((hex>>16)&0xff)/255.0, ((hex>>8)&0xff)/255.0,((hex>>0)&0xff)/255.0
 
 /* information */
@@ -17,6 +16,7 @@ typedef struct {
     short int minute;
     short int second;
     short int battery;
+    char* battery_icon;
 } dt_status_t;
 /* constructor
  */
@@ -33,4 +33,8 @@ void status_poll_battery(dt_status_t *status);
 
 /* drawing */
 char* read_text(const char *fname);
-void draw_textbox(cairo_t *cr, double xpos, double ypos, const char *text, const char *font, int color_RGBA);
+typedef struct { uint32_t x,y,w,h; } rectangle_t;
+typedef void draw_callback(cairo_t*, rectangle_t, void*);
+
+void draw_fill(cairo_t *cr, rectangle_t surf, void *args);
+void draw_text(cairo_t *cr, rectangle_t surf, void *args);

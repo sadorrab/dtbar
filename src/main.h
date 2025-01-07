@@ -1,40 +1,42 @@
 #include "widgets.h"
 
-#define ANCHOR_TOP 1
-#define ANCHOR_BOTTOM 2
-#define ANCHOR_LEFT 4
+const int BACKGROUND = 0x8ec07cff;
+const int BAR = 0x282828ff;
+const int BLUE = 0x458586ff;
+const int GREEN = 0x98971aff;
 
-const int widget_count  = 2;
-const dt_spec_t widget_specs[] = {
-    {
-        .layout = {
-            .name = "wallpaper",
-            .width = SCREEN_WIDTH,
-            .height = SCREEN_HEIGHT,
-            .exclusive_zone = 0,
-            .layer = 0, // background
-            .anchor = ANCHOR_TOP,
-            .off_top = 0,
-            .off_bottom = 0,
-            .off_right = 0,
-            .off_left = 0
-        },
-        .on_start = wall_on_start,
-        .on_repeat = NULL
-    },
-    {
-        .layout = {
-            .name = "clock",
-            .width = 600, 
-            .height = 200,
-            .layer = 1,
-            .anchor = ANCHOR_BOTTOM | ANCHOR_LEFT,
-            .off_top = 0,
-            .off_bottom = 0,
-            .off_left = 40,
-            .off_right = 0
-        },
-        .on_start = NULL,
-        .on_repeat = clock_on_repeat
-    }
+dt_container_t Time = {
+    .minwidth = 90,
+    .minheight = 20,
+    .draw_fn = {draw_fill, draw_text},
+    .draw_args[0] = (void*) &BAR,
+    .child_count = 0
+};
+
+dt_container_t Battery = {
+    .minwidth = 70,
+    .minheight = 20,
+    .draw_fn = {draw_fill, draw_text},
+    .draw_args[0] = (void*) &BAR,
+    .child_count = 0
+};
+
+dt_container_t Statusbar = {
+    .minwidth = SCREEN_WIDTH,
+    .minheight = 24,
+    .content_anchor = ANCHOR_RIGHT | STACKING_HORIZONTAL,
+    .draw_fn = {draw_fill, NULL},
+    .draw_args[0] = (void*) &BAR,
+    .child_count = 2,
+    .children[0] = (struct tnodet_t*)(&Battery),
+    .children[1] = (struct tnodet_t*)(&Time)
+}; 
+
+dt_container_t Wallpaper = {
+    .minwidth = SCREEN_WIDTH,
+    .minheight = SCREEN_HEIGHT,
+    .content_anchor = ANCHOR_TOP | STACKING_VERTICAL,
+    .draw_fn = {draw_fill, NULL},
+    .draw_args[0] = (void*) &BACKGROUND,
+    .child_count = 0
 };
