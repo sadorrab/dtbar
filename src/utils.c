@@ -2,6 +2,9 @@
 
 dt_status_t* create_status() {
     dt_status_t *status = malloc(sizeof(dt_status_t));
+    char icon_default[] = "0000";
+    status->battery_icon = malloc(sizeof(char) * 5);
+    strncpy(status->battery_icon, icon_default, 4);
     return status;
 }
 
@@ -49,29 +52,46 @@ char* read_text(const char *fname) {
     close(fd);
     return buf;
 }
-    
-void draw_fill(cairo_t *cr, rectangle_t surf, void *args) {
-    int color = *((int*) args);
-    cairo_rectangle(cr, surf.x, surf.y, surf.w, surf.h);
-    cairo_set_source_rgba(cr, RGBA(color));
-    cairo_fill(cr);
+
+void sub_src_tmp(char *buf, char *match, dt_status_t *status) {
+    if (strcmp(match, "STATUS_HOUR")==0) {
+        sprintf(buf, "%02d", status->hour);
+    } else if (strcmp(match, "STATUS_MINUTE")==0) {
+        sprintf(buf, "%02d", status->minute);
+    } else if (strcmp(match, "STATUS_SECOND")==0) {
+        sprintf(buf, "%02d", status->second);
+    } else if (strcmp(match, "STATUS_BATTERY")==0) {
+        sprintf(buf, "%02d", status->battery);
+    } else if (strcmp(match, "STATUS_BATTERY_ICON")==0) {
+        strncpy(buf, status->battery_icon, 4);
+    } else {
+        sprintf(buf, "??????????");
+    }
 }
 
-void draw_text(cairo_t *cr, rectangle_t surf, void *args) {
-    char *markup = (char*) args;
-    int len = strlen(markup);
-    char *str = malloc(len * sizeof(char));
-    PangoAttrList *attribs = pango_attr_list_new();
-    pango_parse_markup(markup, -1, 0, &attribs, &str, NULL, NULL);
-    PangoLayout *layout = pango_cairo_create_layout(cr);
-    pango_layout_set_attributes(layout, attribs);
-    pango_layout_set_text(layout, str, -1);
-    cairo_move_to(cr, surf.x, surf.y);
-    pango_layout_set_width(layout, surf.w * PANGO_SCALE);
-    pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-    pango_cairo_show_layout(cr, layout);
+int substitue_str(char *str, char *subs, dt_status_t *status) {
+    char src[100];
+    char *token;
+    token = strtok_r(subs, ",", &subs);
+    int from, n;
+    char buf[100];
+    while(token) {
+        // should check token length
+        sscanf(token, "%d %d %s", &from, &n, buf);
+        char *start = str + from;
+        sub_src_tmp(src, buf, status);
+        memcpy(start, src, n);
+        token = strtok_r(subs, ",", &subs);
+    }
+    return 0;
+}
 
-    pango_attr_list_unref(attribs);
-    g_object_unref(layout);
-    free(str);
+char *trim(char *str) {
+    if (!str) return NULL;
+    char *c=str;
+    for (; *c==' '; c++);
+    int len = strlen(c) -1;
+    for (; c[len]==' '||c[len]=='\n';len--);
+    c[len+1] = '\0';
+    return c;
 }

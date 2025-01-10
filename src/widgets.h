@@ -11,6 +11,10 @@
 #define ANCHOR_RIGHT 8
 #define STACKING_HORIZONTAL 16
 #define STACKING_VERTICAL 32
+#define LAYER_BACKGROUND 0
+#define LAYER_BOTTOM 1
+#define LAYER_TOP 2
+#define LAYER_FOREGROUND 3
 
 typedef struct tnode_t {
     // layout
@@ -18,13 +22,17 @@ typedef struct tnode_t {
     int content_anchor;
     uint32_t x, y, w, h; // dimensions relative to toplevel
     // drawing 
-    int background_color;
-    draw_callback *draw_fn[MAX_DRAW_FN];
-    void *draw_args[MAX_DRAW_FN];
+    DrawData draw_data;
     // tree
     int child_count;
     struct tnodet_t *children[MAX_CHILDREN];
 } dt_container_t;
+/* constructor
+ */
+dt_container_t *create_container();
+/* destructor
+ */
+void destroy_container(dt_container_t *container);
 /* Updates the dimensions of container to st outer containers stretch to fit content
  * and inner contaners know their locations relative to toplevel
  * PARAM container
@@ -32,12 +40,13 @@ typedef struct tnode_t {
  * RETURN: The size in bytes of this container
  */
 size_t container_resize(dt_container_t *content);
-/* applies a given draw callback to a container and its children
+/* applies the draw function to a container and its children
  */
-void do_draw_call(cairo_t *cr, dt_container_t *container, int call_number);
+void container_render_content(dt_container_t *container, cairo_t *cr, dt_status_t *status);
 
 
 typedef struct {
+    char *name;
     wl_pool_buffer_t *buf;
     dt_container_t *content;
     // position
@@ -46,4 +55,9 @@ typedef struct {
     uint32_t exclusive_zone;
     uint32_t off_top, off_bottom, off_left, off_right;
 } dt_widget_t;
-dt_widget_t* dt_widget_init(dt_container_t *content);
+/* constructor
+ */
+dt_widget_t* create_widget();
+/* deconstructor
+ */
+void destroy_widget(dt_widget_t *widget);

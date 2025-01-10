@@ -1,10 +1,20 @@
 #include "widgets.h"
 
-/* CREATING WIDGETS
- * 1. determine size of the contents
- * 2. create shared memory pool
- * 3. give buffers to widgets
- */
+dt_container_t *create_container() {
+    dt_container_t *ct = malloc(sizeof(dt_container_t));
+    ct->content_anchor = 0;
+    ct->minwidth = ct->minheight = 0;
+    ct->x = ct->y = ct->w = ct->h = 0;
+    ct->draw_data.fill_color = 0;
+    ct->draw_data.text[0] = '\0';
+    ct->draw_data.text_subs[0] = '\0';
+    ct->draw_data.text_markup[0] = '\0';
+    return ct;
+}
+
+void destroy_container(dt_container_t *container) {
+    free(container);
+}
 
 size_t update_size(dt_container_t *content) {
     if (content->child_count == 0) {
@@ -86,20 +96,52 @@ size_t container_resize(dt_container_t *content) {
     content->x = 0;
     content->y = 0;
     update_position(content);
-    printf("W: %d H: %d (%d, %d)\n", content->w,content->h,content->x,content->y);
     return total_size;
 }
 
-void do_draw_call(cairo_t *cr, dt_container_t *container, int call_number) {
-    draw_callback *draw = container->draw_fn[call_number];
-    if (draw != NULL) {
-        rectangle_t dimensions = {.x=container->x, .y=container->y, .w=container->w, .h=container->h};
-        draw(cr, dimensions, (void*)container->draw_args[call_number]);
+void draw_content(cairo_t *cr, rectangle_t surf, DrawData *dd, dt_status_t *status) {
+    if (dd->fill_color) {
+        cairo_rectangle(cr, surf.x, surf.y, surf.w, surf.h);
+        cairo_set_source_rgba(cr, RGBA(dd->fill_color));
+        cairo_fill(cr);
     }
-    
-    for (int i=0; i<container->child_count; i++) {
-        dt_container_t *inner = (dt_container_t*) container->children[i];
-        do_draw_call(cr, inner, call_number);
+    if (dd->text[0]) {
+        if (dd->text_subs[0]) {
+            substitue_str(dd->text, dd->text_subs, status);
+        }
+
+        char *markup = dd->text_markup[0]? dd->text_markup : "0 -1 font-desc \"Sans\", 0 -1 foreground #000000";
+        PangoAttrList *attribs = pango_attr_list_from_string(markup);
+        PangoLayout *layout = pango_cairo_create_layout(cr);
+        pango_layout_set_text(layout, dd->text, -1);
+        pango_layout_set_attributes(layout, attribs);
+        pango_layout_set_width(layout, surf.w * PANGO_SCALE);
+        pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
+        cairo_move_to(cr, surf.x, surf.y);
+        pango_cairo_show_layout(cr, layout);
+        pango_attr_list_unref(attribs);
+        g_object_unref(layout);
+
     }
 }
 
+void container_render_content(dt_container_t *container, cairo_t *cr, dt_status_t *status) {
+    rectangle_t dimensions = {.x=container->x, .y=container->y, .w=container->w, .h=container->h};
+    draw_content(cr, dimensions, &(container->draw_data), status);
+    
+    for (int i=0; i<container->child_count; i++) {
+        dt_container_t *inner = (dt_container_t*) container->children[i];
+        container_render_content(inner, cr, status);
+    }
+}
+
+dt_widget_t* create_widget() {
+    dt_widget_t *wg = malloc(sizeof(dt_widget_t));
+    wg->anchor = wg->layer = 0;
+    wg->off_top = wg->off_bottom =  wg->off_right = wg->off_left = 0;
+    return wg;
+}
+
+void destroy_widget(dt_widget_t *widget) {
+    free(widget);
+}

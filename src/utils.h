@@ -1,5 +1,6 @@
 #pragma once
 #include <time.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,10 +32,16 @@ void status_poll_time(dt_status_t *status);
  */
 void status_poll_battery(dt_status_t *status);
 
-/* drawing */
 char* read_text(const char *fname);
+int substitue_str(char *str, char *subs, dt_status_t *status);
+char *trim(char *str);
+
+/* drawing */
+typedef struct {
+    int fill_color;
+    char text[100];
+    char text_subs[100];
+    char text_markup[100];
+} DrawData;
 typedef struct { uint32_t x,y,w,h; } rectangle_t;
 typedef void draw_callback(cairo_t*, rectangle_t, void*);
-
-void draw_fill(cairo_t *cr, rectangle_t surf, void *args);
-void draw_text(cairo_t *cr, rectangle_t surf, void *args);
