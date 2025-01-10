@@ -203,14 +203,16 @@ int main(void) {
     }
     
     // draw loop
-    status_poll_battery(status);
-    status_poll_time(status);
-    for (int i=0; i<wc; i++) {
-        dt_widget_t *widget = widgets[i];
-        container_render_content(widget->content, widget->buf->cairo, status);
-        update_surface(widget->buf);
+    for(;;) {
+        status_poll_battery(status);
+        status_poll_time(status);
+        for (int i=0; i<wc; i++) {
+            dt_widget_t *widget = widgets[i];
+            container_render_content(widget->content, widget->buf->cairo, status);
+            update_surface(widget->buf);
+        }
+        sleep(20);
     }
-    sleep(20);
     wl_fin();
 
     return 0;
