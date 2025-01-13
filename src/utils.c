@@ -70,18 +70,19 @@ void sub_src_tmp(char *buf, char *match, dt_status_t *status) {
 }
 
 int substitue_str(char *str, char *subs, dt_status_t *status) {
-    char src[100];
-    char *token;
-    token = strtok_r(subs, ",", &subs);
-    int from, n;
-    char buf[100];
-    while(token) {
+    char tokenbuf[200];
+    char *s = strncpy(tokenbuf, subs, 200);
+    // loop through each token of the substitute instruction, then make the substitution
+    for(char *token=strtok_r(s,",", &s); token; token=strtok_r(NULL,",",&s)) {
+        int from, n; // sections of the string to be replaced
+        char replacement[100]; // replacement variable
         // should check token length
-        sscanf(token, "%d %d %s", &from, &n, buf);
+        sscanf(token, "%d %d %s", &from, &n, replacement);
         char *start = str + from;
-        sub_src_tmp(src, buf, status);
-        memcpy(start, src, n);
-        token = strtok_r(subs, ",", &subs);
+
+        char buf[100]; // data from status
+        sub_src_tmp(buf, replacement, status);
+        memcpy(start, buf, n);
     }
     return 0;
 }
